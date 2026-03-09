@@ -20,14 +20,9 @@ categorical_cols = [
     "Transaction_Type",
     "Device_Type",
     "Location",
-    "Merchant_Category",
-    "Card_Type",
-    "Authentication_Method",
 ]
 
 binary_cols = [
-    "IP_Address_Flag",
-    "Previous_Fraudulent_Activity",
     "Is_Weekend",
     "Fraud_Label",
 ]
@@ -35,12 +30,6 @@ binary_cols = [
 numeric_cols = [
     "Transaction_Amount",
     "Account_Balance",
-    "Daily_Transaction_Count",
-    "Avg_Transaction_Amount_7d",
-    "Failed_Transaction_Count_7d",
-    "Card_Age",
-    "Transaction_Distance",
-    "Risk_Score",
 ]
 
 # =========================
@@ -113,7 +102,28 @@ derived_numeric_cols = [
 all_numeric_to_transform = numeric_cols + derived_numeric_cols
 
 # Nur die Spalten transformieren, die wirklich existieren
+
 all_numeric_to_transform = [col for col in all_numeric_to_transform if col in df_encoded.columns]
+
+# =========================
+# 7b. Optional: Spalten entfernen
+# =========================
+columns_to_remove = ["Merchant_Category",
+                     "Card_Type",
+                     "Authentication_Method",
+                     "IP_Address_Flag",
+                     "Previous_Fraudulent_Activity",
+                     "Daily_Transaction_Count",
+                     "Avg_Transaction_Amount_7d",
+                     "Failed_Transaction_Count_7d",
+                     "Card_Age",
+                     "Transaction_Distance",
+                     "Risk_Score"
+                     ]
+
+# Nur vorhandene Spalten entfernen
+columns_to_remove = [col for col in columns_to_remove if col in df_encoded.columns]
+df_encoded = df_encoded.drop(columns=columns_to_remove)
 
 # =========================
 # 8. Version A: Z-Score
@@ -134,6 +144,8 @@ df_yeojohnson[all_numeric_to_transform] = pt.fit_transform(df_yeojohnson[all_num
 # =========================
 # 10. Vergleichsplot für Transaction_Amount
 # =========================
+if "Transaction_Amount" not in df_zscore.columns or "Transaction_Amount" not in df_yeojohnson.columns:
+    raise ValueError("Transaction_Amount wurde entfernt. Entferne sie nicht aus columns_to_remove, wenn du den Vergleichsplot erstellen willst.")
 plot_df = pd.DataFrame({
     "Original": df_original["Transaction_Amount"],
     "Z-Score": df_zscore["Transaction_Amount"],
